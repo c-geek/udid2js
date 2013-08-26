@@ -1,8 +1,10 @@
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+// udid2.js - Webapp for generate an OpenUDC ID (udid2)
 
-// Copyright (c) 2012 Michele Bini
+// Copyright (c) 2012, 2013 Michele Bini
 
-// This program is free software: you can redistribute it and/or modify
+// This code requires Sha1.hash, a separately licensed SHA-1 implementation
+
+// "udid2.js" is free software: you can redistribute it and/or modify
 // it under the terms of the version 3 of the GNU General Public License
 // as published by the Free Software Foundation.
 
@@ -14,6 +16,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// "udid2.js" is additionally released under the terms of the following
+// permissive MIT-style license:
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is furnished
+// to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
 
 function emptyElement(e) {
     while (e.firstChild!==null)
@@ -84,6 +106,14 @@ function resetform() {
        alert("An error occurred: " + err.message);
        return false;
    }
+}
+
+// Convert number to fixed point with at least 2 decimal places
+// Keep any extra precision, useful to verify the location with a map
+function fixCoord(x) {
+  return parseFloat(x)
+    .toFixed(8)
+    .match(/^[+-]?[0-9]*[.][0-9][0-9]([0-9]*[1-9])?/)[0];
 }
 
 function normalizeSign(n) {
@@ -176,7 +206,7 @@ function setgeonameslist(l) {
   var t = l[i];
   var o = document.createElement("option");
   o.text = fullgeoname(t);
-  o.value = t.geonameId + " " + t.lat + " " + t.lng;
+  o.value = t.geonameId + " " + fixCoord(t.lat) + " " + fixCoord(t.lng);
   if (first == null) first = o.value;
   addoption(sel, o);
     }
@@ -463,7 +493,7 @@ function generateudid2() {
       } else if (!(/^[+-][0-9][0-9][0-9][.][0-9][0-9]$/.test(lon))) {
     setMessageAfterElement("location", "Could not parse longitude: " + lon);
       } else {
-    documentElement("verifylocation").href = "http://www.openstreetmap.org/?lat=" + lat + "&lon=" + lon + "&zoom=15&layers=M";
+    documentElement("verifylocation").href = "http://www.openstreetmap.org/#map=15/" + lat + "/" + lon;
     setTextContent(documentElement("verifylocation"), "Verify with openstreetmap");
     setMessageAfterElement("location");
     ll = lat + "" + lon;
@@ -538,8 +568,8 @@ function generateudid2() {
       } else if (g.length == 1) {
           setMessageAfterElement("place", "Location found");
           var t = g[0];
-          var lat = t.lat;
-          var lon = t.lng;
+          var lat = fixCoord(t.lat);
+          var lon = fixCoord(t.lng);
           documentElement("place").value = fullgeoname(t);
           documentElement("lat").value = lat;
           documentElement("lon").value = lon;
